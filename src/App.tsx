@@ -1,69 +1,46 @@
-import React, { useState, useEffect } from "react";
-import { fetchNewsAPI, fetchGuardianNews, fetchNYTNews } from "./api/newsService";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "./redux/store";
+import { fetchNews } from "./redux/features/newsSlice";
 import NewsList from "./components/NewsList";
 import SearchFilter from "./components/SearchFilter";
-import { GuardianNewsArticle, NewsApiArticle, NYTNewsArticle } from "./api";
-
-type AggregatedNewsArticle = NewsApiArticle | GuardianNewsArticle | NYTNewsArticle;
 
 const App: React.FC = () => {
-  const [articles, setArticles] = useState<any[]>([]);
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("business");
-  const [selectedSources, setSelectedSources] = useState<string[]>(["NewsAPI", "The Guardian", "NY Times"]); // Default: All sources
-  const [author, setAuthor] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+  const { articles, loading, error } = useSelector(
+    (state: RootState) => state.news
+  );
+  // console.log("🚀 ~ articles:", articles)
+
+  const query = useSelector((state: RootState) => state.news.query);
+  const category = useSelector((state: RootState) => state.news.category);
+  const selectedSources = useSelector(
+    (state: RootState) => state.news.selectedSources
+  );
+  const author = useSelector((state: RootState) => state.news.author);
+  // console.log("🚀 ~ App - author:", author)
 
   useEffect(() => {
-    fetchNews();
-  }, [selectedSources, category, query, author]);
-
-  const fetchNews = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      let newsData: AggregatedNewsArticle[] = [];
-
-      if (selectedSources.includes("NewsAPI")) { 
-        newsData.push(...(await fetchNewsAPI(query, category, author)));
-      }
-      if (selectedSources.includes("The Guardian")) {
-        newsData.push(...(await fetchGuardianNews(query, category, author)));
-      }
-      if (selectedSources.includes("NY Times")) {
-        newsData.push(...(await fetchNYTNews(query, category, author)));
-      }
-
-      setArticles(newsData);
-    } catch (err) {
-      console.error("Error fetching news:", err);
-      setError("Failed to load news. Please try again later.");
-    } finally {
-      setLoading(false);
+    if (articles.length === 0 && !author) {
+      dispatch(fetchNews());
     }
-  };
+  }, [dispatch, query, category, author, selectedSources, articles]);
+
+  // console.log("🚀 ~ author:", author)
 
   return (
-    <div className="p-6">
+    <div className="max-w-md sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto p-6">
       <h1 className="text-2xl font-bold text-black">News Aggregator</h1>
-      <SearchFilter
-        onSearch={setQuery}
-        onFilterCategory={setCategory}
-        onFilterSource={(source: string) => setSelectedSources([source])}
-        onSetAuthor={setAuthor}
-      />
+      <SearchFilter />
 
-      {/* Show error message if an error occurs */}
-      {error && <p className="text-red-600 text-lg">{error}</p>}
-
-      {/* Show loading message while fetching data */}
-      {loading ? (
-        <p className="text-blue-600 text-lg">Fetching news, please wait...</p>
-      ) : (
-        <NewsList articles={articles} />
-      )}
+      <section>
+        {error && <p className="text-red-600 text-lg">{error}</p>}
+        {loading ? (
+          <p className="text-blue-600 text-lg">Fetching news, please wait...</p>
+        ) : (
+          <NewsList articles={articles} />
+        )}
+      </section>
     </div>
   );
 };
