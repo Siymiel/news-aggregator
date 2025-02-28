@@ -1,25 +1,27 @@
 import axios from "axios";
 import { NewsApiArticle, GuardianNewsArticle, NYTNewsArticle } from "./types";
+import { NEWS_API_URL, GUARDIAN_API_URL, NYT_API_URL } from "./constants";
+import { ArticleInterface } from "@/redux/features/types";
 
-const NEWS_API_KEY = import.meta.env.VITE_APP_NEWS_API_KEY;
-const GUARDIAN_API_KEY = import.meta.env.VITE_APP_GUARDIAN_API_KEY;
-const NYT_API_KEY = import.meta.env.VITE_NYT_API_KEY;
-
-const NEWS_API_URL = `https://newsapi.org/v2/top-headlines?apiKey=${NEWS_API_KEY}&pageSize=10`;
-const GUARDIAN_API_URL = `https://content.guardianapis.com/search?api-key=${GUARDIAN_API_KEY}&page-size=10`;
-const NYT_API_URL = `https://api.nytimes.com/svc/search/v2/articlesearch.json?api-key=${NYT_API_KEY}`;
-  
-const fetchNewsAPI = async (query = "", category = "", author = "", date = "") => {
+// fetchNewsAPI
+const fetchNewsAPI = async (
+  query = "",
+  category = "",
+  author = "",
+  date = ""
+) => {
   try {
-    let url = NEWS_API_URL;
-    
-    if (query) url += `&q=${query}`;
-    if (category) url += `&category=${category}`;
-    if (date) url += `&from=${date}&to=${date}`;
-    
+    const params = new URLSearchParams();
+    if (query) params.append("q", query);
+    if (category) params.append("category", category);
+    if (date) params.append("from", date);
+    if (date) params.append("to", date);
+
+    const url = `${NEWS_API_URL}?${params.toString()}`;
+
     const response = await axios.get(url);
-    
-    let articles = response.data.articles.map((article: NewsApiArticle) => ({
+
+    const articles = response.data.articles.map((article: NewsApiArticle) => ({
       title: article.title,
       description: article.description,
       url: article.url,
@@ -29,80 +31,131 @@ const fetchNewsAPI = async (query = "", category = "", author = "", date = "") =
       publishedAt: article.publishedAt,
     }));
 
-    if (author) {
-      articles = articles.filter((article: { author: string; }) => 
-        article.author.toLowerCase().includes(author.toLowerCase())
-      );
-    }
-
-    return articles;
+    return filterByAuthor(articles, author);
   } catch (error) {
-    console.error("Error fetching from NewsAPI:", error);
-    return [];
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        if (error.response.status === 429) {
+          console.error("Rate limit exceeded. Please try again later.");
+          return { error: "Too many requests. Please try again in a few minutes." };
+        }
+        return { error: `Failed to fetch news. Status: ${error.response.status}` };
+      } else if (error.request) {
+        return { error: "No response from the server. Please check your connection." };
+      }
+    }
+    return { error: "An unexpected error occurred while fetching news." };
   }
 };
 
-
-const fetchGuardianNews = async (query = "", category = "", date = "") => {
+// fetchGuardianNews
+const fetchGuardianNews = async (
+  query = "",
+  category = "",
+  author = "",
+  date = ""
+) => {
   try {
     let url = GUARDIAN_API_URL;
-    
+
     if (query) url += `&q=${query}`;
     if (category) url += `&section=${category}`;
     if (date) url += `&from-date=${date}&to-date=${date}`;
-    
-    const response = await axios.get(url);
-    
-    let articles = response.data.response.results.map((article: GuardianNewsArticle) => ({
-      title: article.webTitle,
-      description: "No description available",
-      url: article.webUrl,
-      source: "The Guardian",
-      category,
-      author: "Anonymous",
-      publishedAt: article.webPublicationDate,
-    }));
 
-    return articles;
+    const response = await axios.get(url, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+
+    const articles = response.data.response.results.map(
+      (article: GuardianNewsArticle) => ({
+        title: article.webTitle,
+        description: "No description available",
+        url: article.webUrl,
+        source: "The Guardian",
+        category,
+        author: "Anonymous",
+        publishedAt: article.webPublicationDate,
+      })
+    );
+
+    return filterByAuthor(articles, author);
   } catch (error) {
-    console.error("Error fetching from The Guardian:", error);
-    return [];
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        if (error.response.status === 429) {
+          console.error("Rate limit exceeded. Please try again later.");
+          return { error: "Too many requests. Please try again in a few minutes." };
+        }
+        return { error: `Failed to fetch news. Status: ${error.response.status}` };
+      } else if (error.request) {
+        return { error: "No response from the server. Please check your connection." };
+      }
+    }
+    return { error: "An unexpected error occurred while fetching news." };
   }
 };
 
-
-const fetchNYTNews = async (query = "", category = "", author = "", date = "") => {
+// fetchNYTNews
+const fetchNYTNews = async (
+  query = "",
+  category = "",
+  author = "",
+  date = ""
+) => {
   try {
     let url = NYT_API_URL;
-    
+
     if (query) url += `&q=${query}`;
     if (category) url += `&fq=news_desk:("${category}")`;
-    if (date) url += `&begin_date=${date.replace(/-/g, "")}&end_date=${date.replace(/-/g, "")}`;
-    
+    if (date)
+      url += `&begin_date=${date.replace(/-/g, "")}&end_date=${date.replace(
+        /-/g,
+        ""
+      )}`;
+
     const response = await axios.get(url);
-    
-    let articles = response.data.response.docs.map((article: NYTNewsArticle) => ({
-      title: article.headline.main,
-      description: article.snippet || "No description available",
-      url: article.web_url,
-      source: "NY Times",
-      category,
-      author: article.byline?.original || "Anonymous",
-      publishedAt: article.pub_date,
-    }));
 
-    if (author) {
-      articles = articles.filter((article: { author: string; }) =>
-        article.author.toLowerCase().includes(author.toLowerCase())
-      );
-    }
+    const articles = response.data.response.docs.map(
+      (article: NYTNewsArticle) => ({
+        title: article.headline.main,
+        description: article.snippet || "No description available",
+        url: article.web_url,
+        source: "NY Times",
+        category,
+        author: article.byline?.original || "Anonymous",
+        publishedAt: article.pub_date,
+      })
+    );
 
-    return articles;
+    return filterByAuthor(articles, author);
   } catch (error) {
-    console.error("Error fetching from NY Times:", error);
-    return [];
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        if (error.response.status === 429) {
+          console.error("Rate limit exceeded. Please try again later.");
+          return { error: "Too many requests. Please try again in a few minutes." };
+        }
+        return { error: `Failed to fetch news. Status: ${error.response.status}` };
+      } else if (error.request) {
+        return { error: "No response from the server. Please check your connection." };
+      }
+    }
+    return { error: "An unexpected error occurred while fetching news." };
   }
 };
 
+const filterByAuthor = (articles: ArticleInterface[], author: string) => {
+  if (!author) return articles;
+
+  const formattedAuthor = author.toLowerCase().trim();
+
+  return articles.filter((article) => {
+    const articleAuthor = article.author.toLowerCase().trim();
+    return formattedAuthor.split(" ").every((word) => articleAuthor.includes(word));
+  });
+};
 
 export { fetchNewsAPI, fetchGuardianNews, fetchNYTNews };

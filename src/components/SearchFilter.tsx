@@ -10,9 +10,9 @@ import {
 } from "../redux/features/newsSlice";
 import { fetchNews } from "../redux/features/newsSlice";
 import PreferencesDropdown from "./PreferencesDropdown";
-import { GearIcon } from '@radix-ui/react-icons'
+import { GearIcon } from "@radix-ui/react-icons";
 
-const sources = ["NewsAPI", "The Guardian", "NY Times"];
+const sources = ["all", "NewsAPI", "The Guardian", "NY Times"];
 const categories = [
   "Business",
   "Sports",
@@ -23,18 +23,31 @@ const categories = [
 
 const SearchFilter: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  const query = useSelector((state: RootState) => state.news.query);
-  const category = useSelector((state: RootState) => state.news.category);
-  const author = useSelector((state: RootState) => state.news.author);
-  const date = useSelector((state: RootState) => state.news.date);
-  const [source, setSource] = useState("");
+  const { query, author, category, date, articles, selectedSources } = useSelector(
+    (state: RootState) => state.news
+  );
+  const { preferenceCategory, preferenceAuthor, selectedPreferenceSources } =
+    useSelector((state: RootState) => state.preferences);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleSearch = () => {
-    dispatch(setQuery(query));
-    dispatch(setSelectedSources([source]));
-    dispatch(setAuthor(author));
-    dispatch(setDate(date));
+    dispatch(setQuery(query || ""));
+    dispatch(
+      setSelectedSources(
+        selectedSources ? [selectedSources] : selectedPreferenceSources || ["all"]
+      )
+    );
+    dispatch(setAuthor(author || preferenceAuthor || null));
+    dispatch(setDate(date || ""));
+    dispatch(fetchNews());
+  };
+
+  const handleClearFilters = () => {
+    dispatch(setQuery(""));
+    dispatch(setCategory(preferenceCategory || "business"));
+    dispatch(setSelectedSources(selectedPreferenceSources || ["all"]));
+    dispatch(setAuthor(preferenceAuthor || null));
+    dispatch(setDate(""));
 
     dispatch(fetchNews());
   };
@@ -43,7 +56,7 @@ const SearchFilter: React.FC = () => {
     <div className="py-4">
       {/* Search Inputs */}
       <section className="flex items-center justify-between">
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-4 items-center">
           <input
             type="text"
             placeholder="Search by Title"
@@ -53,15 +66,20 @@ const SearchFilter: React.FC = () => {
           />
           <select
             className="border border-gray-300 p-2 rounded w-full sm:w-auto text-black"
-            value={source}
-            onChange={(e) => setSource(e.target.value)}
+            value={selectedSources[0]}
+            onChange={(e) => dispatch(setSelectedSources([e.target.value]))}
           >
-            <option value="all">All Sources</option>
-            {sources.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
+            {sources.map((s) =>
+              s === "all" ? (
+                <option key={s} value={s}>
+                  All Sources
+                </option>
+              ) : (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              )
+            )}
           </select>
           <input
             type="text"
@@ -79,10 +97,15 @@ const SearchFilter: React.FC = () => {
 
           <button
             onClick={handleSearch}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer
+            "
           >
             Search
           </button>
+
+          <div className="cursor-pointer" onClick={handleClearFilters}>
+            <p>Clear Filters</p>
+          </div>
         </div>
 
         <div>
@@ -102,24 +125,29 @@ const SearchFilter: React.FC = () => {
       </section>
 
       {/* Category Tabs */}
-      <div className="flex gap-2 overflow-x-auto border-b pb-6">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            className={`px-4 py-2 rounded ${
-              category === cat.toLowerCase()
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-black"
-            }`}
-            onClick={() => {
-              dispatch(setCategory(cat.toLowerCase()));
-              dispatch(fetchNews());
-            }}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <section className="flex items-baseline justify-between border-b pb-6">
+        <div className="flex gap-2 overflow-x-auto ">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              className={`px-4 py-2 rounded cursor-pointer ${
+                category === cat.toLowerCase()
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-black"
+              }`}
+              onClick={() => {
+                dispatch(setCategory(cat.toLowerCase()));
+                dispatch(fetchNews());
+              }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <p className="text-base font-normal">
+          Showing: {articles.length > 0 ? articles.length : 0} results
+        </p>
+      </section>
     </div>
   );
 };

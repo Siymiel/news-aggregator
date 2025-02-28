@@ -17,15 +17,12 @@ interface Props {
 const NewsList: React.FC<Props> = ({ articles }) => {
   return (
     <div className="max-w-4xl pr-4">
-      {articles.length === 0 ? (
-        <p className="text-black text-lg">No articles found.</p>
-      ) : (
+      {articles.length !== 0 && (
         articles.map((article, index) => (
           <div key={index} className="border-b pb-4 mb-4">
             <h2 className="text-lg font-semibold text-black">
               {article.title}
             </h2>
-            {/* <p className="text-black">{article.description}</p> */}
             <p className="text-sm text-gray-500 pt-1">
               Source: {article.source} | Author: {article.author}
             </p>
