@@ -2,6 +2,7 @@
   "name": "news-aggregator",
   "private": true,
   "version": "1.0.0",
+  "author": "Samuel Kinuthia",
   "type": "module",
   "scripts": {
     "dev": "vite",

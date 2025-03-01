@@ -30,18 +30,6 @@ const SearchFilter: React.FC = () => {
     useSelector((state: RootState) => state.preferences);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleSearch = () => {
-    dispatch(setQuery(query || ""));
-    dispatch(
-      setSelectedSources(
-        selectedSources ? [selectedSources] : selectedPreferenceSources || ["all"]
-      )
-    );
-    dispatch(setAuthor(author || preferenceAuthor || null));
-    dispatch(setDate(date || ""));
-    dispatch(fetchNews());
-  };
-
   const handleClearFilters = () => {
     dispatch(setQuery(""));
     dispatch(setCategory(preferenceCategory || "business"));
@@ -55,8 +43,8 @@ const SearchFilter: React.FC = () => {
   return (
     <div className="py-4">
       {/* Search Inputs */}
-      <section className="flex items-center justify-between">
-        <div className="flex flex-col sm:flex-row gap-4 mb-4 items-center">
+      <section className="grid md:flex items-center justify-between">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex flex-col sm:flex-row gap-2 md:gap-4 mb-4 items-center">
           <input
             type="text"
             placeholder="Search by Title"
@@ -66,7 +54,7 @@ const SearchFilter: React.FC = () => {
           />
           <select
             className="border border-gray-300 p-2 rounded w-full sm:w-auto text-black"
-            value={selectedSources[0]}
+            value={selectedPreferenceSources || selectedSources[0]}
             onChange={(e) => dispatch(setSelectedSources([e.target.value]))}
           >
             {sources.map((s) =>
@@ -83,7 +71,7 @@ const SearchFilter: React.FC = () => {
           </select>
           <input
             type="text"
-            placeholder="Search by Author"
+            placeholder="Filter by Author"
             className="border border-gray-300 p-2 rounded w-full sm:w-auto text-black"
             value={author || ""}
             onChange={(e) => dispatch(setAuthor(e.target.value))}
@@ -91,24 +79,20 @@ const SearchFilter: React.FC = () => {
           <input
             type="date"
             className="border border-gray-300 p-2 rounded w-full sm:w-auto text-black"
-            value={date}
+            value={date || ""}
             onChange={(e) => dispatch(setDate(e.target.value))}
           />
 
           <button
-            onClick={handleSearch}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer
+            onClick={handleClearFilters}
+            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-blue-500 cursor-pointer
             "
           >
-            Search
+            Clear Filters
           </button>
-
-          <div className="cursor-pointer" onClick={handleClearFilters}>
-            <p>Clear Filters</p>
-          </div>
         </div>
 
-        <div>
+        <div className="hidden lg:block">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
             className="p-2 cursor-pointer"
@@ -125,7 +109,7 @@ const SearchFilter: React.FC = () => {
       </section>
 
       {/* Category Tabs */}
-      <section className="flex items-baseline justify-between border-b pb-6">
+      <section className="grid md:flex items-baseline justify-between border-b pb-6">
         <div className="flex gap-2 overflow-x-auto ">
           {categories.map((cat) => (
             <button
@@ -144,7 +128,7 @@ const SearchFilter: React.FC = () => {
             </button>
           ))}
         </div>
-        <p className="text-base font-normal">
+        <p className="text-base font-normal hidden md:grid">
           Showing: {articles.length > 0 ? articles.length : 0} results
         </p>
       </section>

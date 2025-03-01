@@ -1,50 +1,79 @@
-# React + TypeScript + Vite
+# 📰 News Aggregator  
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A **React & Redux-powered** news aggregator that fetches and displays news from multiple sources. Users can filter news by **category, source, date, and author** for a customized reading experience.
 
-Currently, two official plugins are available:
+## 🚀 Features  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+✅ Fetches news from multiple sources using **Redux & Redux Toolkit**  
+✅ Filters news by **category, source, and author**  
+✅ Displays a **loading spinner** while fetching news  
+✅ **Responsive UI** built with Tailwind CSS  
+✅ Optimized state management with **Redux**  
+✅ **Error handling** for failed API requests  
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## ⚙️ Tech Stack  
 
-- Configure the top-level `parserOptions` property like this:
+- **Frontend**: React, Redux Toolkit, TypeScript  
+- **UI**: Tailwind CSS, Radix Icons  
+- **State Management**: Redux & Redux Toolkit  
+- **API**: News API, The Guardian, NewYork Times
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+---
+
+## 📦 Installation  
+
+Clone the repository:  
+```bash
+git clone https://github.com/Siymiel/news-aggregator.git
+cd news-aggregator
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+Install dependencies:  
+```bash
+yarn install
 ```
+
+---
+
+## 📰 API Configuration  
+
+1. **Copy the `.env.example` file** and create a new environment file for development:  
+   ```bash
+   cp .env.example .env.development
+   ```
+2. **Open `.env.development` and fill in your values**:  
+   ```
+   VITE_NEWS_API_KEY=your_api_key_here
+   VITE_APP_GUARDIAN_API_KEY=your_api_key_here
+   VITE_NYT_API_KEY=your_api_key_here
+   ```
+3. Make sure your API key is valid and saved correctly before running the app.
+
+---
+
+## 🏃‍♂️ Running the App  
+
+Start the development server:  
+```bash
+yarn dev
+```
+
+The app will be available at **http://localhost:5173**.
+
+---
+
+## 🔥 Usage  
+
+1. Open the app and browse the latest news.  
+2. Fill the **filter inputs** to customize your feed.  
+3. Select your **preferred category, source, date, or author** and apply.  
+4. Enjoy your personalized news feed!  
+
+---
+
+## 🛠️ Troubleshooting  
+
+**2. No news is loading?**  
+- Check if your API key is valid.

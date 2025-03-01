@@ -36,7 +36,7 @@ const PreferencesDropdown: React.FC<Props> = ({ close }) => {
   }
 
   return (
-    <div className="absolute right-30 mt-1 bg-white shadow-md border border-gray-100 rounded p-4 w-64">
+    <div className="absolute right-10 lg:right-30 mt-1 bg-white shadow-md border border-gray-100 rounded p-4 w-64">
      <div className="flex justify-between items-center border-b border-gray-400 mb-3 pb-1">
        <button onClick={close} className="absolute right-3 text-gray-600 hover:bg-red-300 rounded-full p-0.5 cursor-pointer">
         <Cross2Icon className="h-5 w-5 hover:text-gray-200" />

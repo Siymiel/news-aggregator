@@ -1,3 +1,4 @@
+# Docker file for development
 FROM node:18
 
 WORKDIR /app
@@ -9,4 +10,4 @@ RUN yarn install
 COPY . .
 
 EXPOSE 5173
-CMD ["yarn", "dev"]
+CMD ["yarn", "dev", "--host"]
