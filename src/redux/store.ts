@@ -1,15 +1,26 @@
-import { configureStore, ThunkAction, Action  } from "@reduxjs/toolkit";
+import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import { newsReducer, preferencesReducer } from "./features";
 import storage from "reduxjs-toolkit-persist/lib/storage";
-import { persistReducer, persistStore } from "reduxjs-toolkit-persist";
+import {
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+  persistReducer,
+  persistStore,
+} from "reduxjs-toolkit-persist";
 
 const preferencesPersistConfig = {
-    key: "root",
-    storage,
-    whitelist: ["preferences"],
-  };
+  key: "preferences",
+  storage,
+};
 
-  const persistedPreferencesReducer = persistReducer(preferencesPersistConfig, preferencesReducer);
+const persistedPreferencesReducer = persistReducer(
+  preferencesPersistConfig,
+  preferencesReducer
+);
 
 const store = configureStore({
   reducer: {
@@ -18,7 +29,9 @@ const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false,
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
     }),
 });
 

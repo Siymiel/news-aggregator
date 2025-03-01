@@ -3,34 +3,34 @@ import { persistReducer } from "reduxjs-toolkit-persist";
 import storage from "reduxjs-toolkit-persist/lib/storage";
 
 interface PreferencesState {
-  selectedSources: string[];
-  category: string;
-  author: string | null;
+  selectedPreferenceSources: string;
+  preferenceCategory: string | null;
+  preferenceAuthor: string | null;
 }
 
 const initialState: PreferencesState = {
-  selectedSources: ["NewsAPI", "The Guardian", "NY Times"],
-  category: "business",
-  author: null,
+  selectedPreferenceSources: "all",
+  preferenceCategory: "",
+  preferenceAuthor: "",
 };
 
 const preferencesSlice = createSlice({
   name: "preferences",
   initialState,
   reducers: {
-    setSelectedSources(state, action: PayloadAction<string[]>) {
-      state.selectedSources = action.payload;
+    setSelectedPreferenceSources(state, action: PayloadAction<string>) {
+      state.selectedPreferenceSources = action.payload;
     },
-    setCategory(state, action: PayloadAction<string>) {
-      state.category = action.payload;
+    setPreferenceCategory(state, action: PayloadAction<string | null>) {
+      state.preferenceCategory = action.payload;
     },
-    setAuthor(state, action: PayloadAction<string | null>) {
-      state.author = action.payload;
+    setPreferenceAuthor(state, action: PayloadAction<string | null>) {
+      state.preferenceAuthor = action.payload;
     }
   },
 });
 
-export const { setSelectedSources, setCategory, setAuthor } =
+export const { setSelectedPreferenceSources, setPreferenceCategory, setPreferenceAuthor } =
   preferencesSlice.actions;
 
 const persistConfig = {

@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../redux/store";
 import {
-  setCategory,
-  setSelectedSources,
-  setAuthor,
+  setPreferenceCategory,
+  setSelectedPreferenceSources,
+  setPreferenceAuthor,
 } from "../redux/features/preferencesSlice";
 import { RootState } from "../redux/store";
 import { Cross2Icon } from '@radix-ui/react-icons'
+import { fetchNews, setAuthor, setCategory, setSelectedSources } from "../redux/features/newsSlice";
 
-const sources = ["NewsAPI", "The Guardian", "NY Times"];
+const sources = ["all", "NewsAPI", "The Guardian", "NY Times"];
 const categories = ["Business", "Sports", "Technology", "Entertainment", "Health"];
 
 interface Props {
@@ -16,19 +18,22 @@ interface Props {
 }
 
 const PreferencesDropdown: React.FC<Props> = ({ close }) => {
-  const dispatch = useDispatch();
-  const { selectedSources, category, author } = useSelector(
-    (state: RootState) => state.news
+  const dispatch: AppDispatch = useDispatch();
+  const { selectedPreferenceSources, preferenceCategory, preferenceAuthor } = useSelector(
+    (state: RootState) => state.preferences
   );
 
-  const [authorInput, setAuthorInput] = useState(author || "");
+  const handleApply = () => {
+    dispatch(setPreferenceAuthor(preferenceAuthor));
+    dispatch(setSelectedPreferenceSources(selectedPreferenceSources));
+    dispatch(setPreferenceCategory(preferenceCategory));
 
-  const handleSourceChange = (source: string) => {
-    const updatedSources = selectedSources.includes(source)
-      ? selectedSources.filter((s) => s !== source)
-      : [...selectedSources, source];
-    dispatch(setSelectedSources(updatedSources));
-  };
+    dispatch(setAuthor(preferenceAuthor))
+    dispatch(setSelectedSources(selectedPreferenceSources))
+    dispatch(setCategory(preferenceCategory))
+    dispatch(fetchNews());
+    close();
+  }
 
   return (
     <div className="absolute right-30 mt-1 bg-white shadow-md border border-gray-100 rounded p-4 w-64">
@@ -47,8 +52,10 @@ const PreferencesDropdown: React.FC<Props> = ({ close }) => {
           <div key={source} className="flex items-center gap-2 mt-1">
             <input
               type="checkbox"
-              checked={selectedSources.includes(source)}
-              onChange={() => handleSourceChange(source)}
+              checked={selectedPreferenceSources === source || selectedPreferenceSources === 'all'}
+              value={selectedPreferenceSources}
+              // onChange={() => handleSourceChange(source)}
+              onChange={() => dispatch(setSelectedPreferenceSources(source))}
             />
             <label>{source}</label>
           </div>
@@ -60,11 +67,11 @@ const PreferencesDropdown: React.FC<Props> = ({ close }) => {
         <label className="font-semibold">Category:</label>
         <select
           className="border p-2 rounded w-full text-black mt-1"
-          value={category}
-          onChange={(e) => dispatch(setCategory(e.target.value))}
+          value={preferenceCategory || 'business'}
+          onChange={(e) => dispatch(setPreferenceCategory(e.target.value.toLowerCase()))}
         >
           {categories.map((cat) => (
-            <option key={cat} value={cat}>
+            <option key={cat} value={cat.toLowerCase()}>
               {cat}
             </option>
           ))}
@@ -78,18 +85,17 @@ const PreferencesDropdown: React.FC<Props> = ({ close }) => {
           type="text"
           placeholder="Filter by Author"
           className="border p-2 rounded w-full text-black mt-1"
-          value={authorInput}
+          value={preferenceAuthor}
           onChange={(e) => {
-            setAuthorInput(e.target.value);
-            dispatch(setAuthor(e.target.value));
+            dispatch(setPreferenceAuthor(e.target.value));
           }}
         />
       </div>
 
       {/* Apply Button */}
       <button
-        onClick={close}
-        className="bg-blue-600 text-white px-4 py-2 rounded mt-3 w-full hover:bg-blue-700"
+        onClick={handleApply}
+        className="bg-blue-600 text-white px-4 py-2 rounded mt-3 w-full hover:bg-blue-700 cursor-pointer"
       >
         Apply
       </button>
