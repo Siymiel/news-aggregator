@@ -1,12 +1,15 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "./redux/store";
 import { fetchNews } from "./redux/features/newsSlice";
 import NewsList from "./components/NewsList";
 import SearchFilter from "./components/SearchFilter";
 import { SymbolIcon } from "@radix-ui/react-icons";
+import { GearIcon } from "@radix-ui/react-icons";
+import { PreferencesDropdown } from "./components";
 
 const App: React.FC = () => {
+  const [showDropdown, setShowDropdown] = useState(false);
   const dispatch: AppDispatch = useDispatch();
   const { articles, loading, error } = useSelector(
     (state: RootState) => state.news
@@ -26,8 +29,24 @@ const App: React.FC = () => {
   }, [dispatch, memoizedFilters]);
   
   return (
-    <div className="max-w-md sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-black">📰 News Aggregator</h1>
+    <div className="max-w-md sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto p-3 md:p-6">
+     <div className="flex items-center space-between">
+     <h1 className="text-3xl font-bold text-black">📰 News Aggregator App</h1>
+      <div className="md:hidden">
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="p-2 cursor-pointer"
+          >
+            <span className="text-gray-700 text-xl">
+              <GearIcon className="h-6 w-6 hover:text-black hover:shadow-md rounded-full" />
+            </span>
+          </button>
+
+          {showDropdown && (
+            <PreferencesDropdown close={() => setShowDropdown(false)} />
+          )}
+        </div>
+     </div>
       <SearchFilter />
 
       <section>

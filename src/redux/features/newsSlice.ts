@@ -7,7 +7,6 @@ import {
 } from "../../api/newsService";
 import { ArticleInterface, NewsState } from "./types";
 
-
 const initialState: NewsState = {
   articles: [],
   query: "",
@@ -86,11 +85,10 @@ export const fetchNews =
       ? state.news.author
       : state.preferences.preferenceAuthor || state.news.author;
 
-    const selectedSources = state.news.manualSource ? state.news.selectedSources
-    : state.preferences.selectedPreferenceSources
-    || state.news.selectedSources;
-    
-    console.log("🚀 ~ selectedSources:", selectedSources)
+    const selectedSources = state.news.manualSource
+      ? state.news.selectedSources
+      : state.preferences.selectedPreferenceSources ||
+        state.news.selectedSources;
 
     const { date } = state.news;
 
@@ -98,40 +96,37 @@ export const fetchNews =
     dispatch(setCategory(category));
     dispatch(setAuthor(author));
 
-    //let newsData: ArticleInterface[] = [];
     dispatch(setArticles([]));
 
     const fetchSources = [
       {
         name: "NewsAPI",
-        enabled:
-          selectedSources.includes("NewsAPI"),
+        enabled: selectedSources.includes("NewsAPI"),
         fetch: () => fetchNewsAPI(state.news.query, category, author, date),
       },
       {
         name: "The Guardian",
-        enabled:
-          selectedSources.includes("The Guardian"),
+        enabled: selectedSources.includes("The Guardian"),
         fetch: () =>
           fetchGuardianNews(state.news.query, category, author, date),
       },
       {
         name: "NY Times",
-        enabled:
-          selectedSources.includes("NY Times"),
+        enabled: selectedSources.includes("NY Times"),
         fetch: () => fetchNYTNews(state.news.query, category, author, date),
       },
       {
         name: "all",
         enabled: selectedSources.includes("all"),
-        fetch: async () => { 
-          return Promise.all([
+        fetch: async () => {
+          const results = await Promise.all([
             fetchNewsAPI(state.news.query, category, author, date),
             fetchGuardianNews(state.news.query, category, author, date),
-            fetchNYTNews(state.news.query, category, author, date)
+            fetchNYTNews(state.news.query, category, author, date),
           ]);
-        }
-      }
+          return results.flat();
+        },
+      },
     ];
 
     let hasArticles = false;
@@ -141,12 +136,26 @@ export const fetchNews =
       .map(async (source) => {
         try {
           const articles = await source.fetch();
-          console.log("🚀 ~ .map ~ articles:", articles)
+          console.log("🚀 ~ .map ~ articles:", articles);
           if (articles.error) {
             dispatch(setError(articles.error));
           } else if (articles.length > 0) {
             hasArticles = true;
-            dispatch(setArticles([...getState().news.articles, ...articles]));
+
+            // filtering out invalid articles
+            const validArticles = articles.filter(
+              (article: ArticleInterface) =>
+                article.title &&
+                article.author &&
+                article.source &&
+                article.publishedAt
+            );
+
+            if (validArticles.length > 0) {
+              dispatch(
+                setArticles([...getState().news.articles, ...validArticles])
+              );
+            }
           }
         } catch (error) {
           console.error(`Error fetching news from ${source.name}:`, error);
@@ -160,71 +169,4 @@ export const fetchNews =
     }
 
     dispatch(setLoading(false));
-
-    // const fetchWithErrorHandling = async (
-    //   fetchFunction: () => Promise<ArticleInterface[]>,
-    //   sourceName: string
-    // ) => {
-    //   try {
-    //     return await fetchFunction();
-    //   } catch (error) {
-    //     console.error(`Error fetching news from ${sourceName}:`, error);
-    //     return [];
-    //   }
-    // };
-
-    // try {
-    //   const shouldFetchNewsAPI =
-    //     selectedSources.includes("NewsAPI") || selectedSources.includes("all");
-    //   const shouldFetchGuardian =
-    //     selectedSources.includes("The Guardian") ||
-    //     selectedSources.includes("all");
-    //   const shouldFetchNYT =
-    //     selectedSources.includes("NY Times") || selectedSources.includes("all");
-
-    //   const fetchPromises: Promise<ArticleInterface[]>[] = [];
-
-    //   if (shouldFetchNewsAPI) {
-    //     fetchPromises.push(
-    //       fetchWithErrorHandling(
-    //         () => fetchNewsAPI(state.news.query, category, author, date),
-    //         "NewsAPI"
-    //       )
-    //     );
-    //   }
-
-    //   if (shouldFetchGuardian) {
-    //     fetchPromises.push(
-    //       fetchWithErrorHandling(
-    //         () => fetchGuardianNews(state.news.query, category, author, date),
-    //         "The Guardian"
-    //       )
-    //     );
-    //   }
-
-    //   if (shouldFetchNYT) {
-    //     fetchPromises.push(
-    //       fetchWithErrorHandling(
-    //         () => fetchNYTNews(state.news.query, category, author, date),
-    //         "NY Times"
-    //       )
-    //     );
-    //   }
-
-    //   const results = await Promise.all(fetchPromises);
-    //   newsData = results.flat();
-
-    //   dispatch(setArticles(newsData));
-
-    //   if (newsData.length === 0) {
-    //     console.warn("No articles found for the given filters.");
-    //     dispatch(setError("No articles found. Try adjusting the filters."));
-    //   }
-    // } catch (error) {
-    //   console.error("Unexpected error fetching news:", error);
-    //   dispatch(setError("Failed to load news. Please try again later."));
-    // } finally {
-    //   dispatch(setLoading(false));
-    //   console.log("Failed to load news. Please try again later");
-    // }
   };
