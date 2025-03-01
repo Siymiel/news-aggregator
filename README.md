@@ -73,7 +73,49 @@ The app will be available at **http://localhost:5173**.
 
 ---
 
+## 🚀 Future Improvements  
+
+Here are some areas for improvement to enhance **performance, development experience, and user engagement**:
+
+### ⚡ **Performance & Optimization**  
+✅ **Improve API Calls Efficiency**:  
+- Cache API responses to avoid redundant requests (e.g., use **RTK Query**, React Query, or a caching mechanism).  
+- Debounce search/filter input to **reduce unnecessary re-fetching** of articles.  
+
+✅ **Optimize Redux State**:  
+- Normalize state structure to prevent redundant data storage.  
+- Use **RTK Query** instead of manual async thunks for cleaner API calls.  
+
+✅ **Optimize Rendering Performance**:  
+- Implement **React.memo** and **useCallback** to prevent unnecessary re-renders.  
+- Use **virtualized lists** (e.g., react-window) for better performance when displaying many articles.  
+
+✅ **Lazy Loading & Code Splitting**:  
+- Split code using **React.lazy** and **dynamic imports** for faster initial loads.  
+- Implement **lazy image loading** for improved page performance.  
+
+---
+
+### 🛠 **Development & DX (Developer Experience)**  
+✅ **Improve API Error Handling**:  
+- Implement a **global error boundary** to catch unhandled errors.  
+- Provide **more descriptive error messages** for API failures.  
+
+✅ **Write More Tests**:  
+- Add **unit tests** for Redux actions, reducers, and API calls using **Jest** & **React Testing Library**.  
+- Implement **end-to-end (E2E) tests** using **Cypress** or Playwright.  
+
+✅ **Enhance Type Safety**:  
+- Improve TypeScript typings for API responses & Redux state.  
+- Use **Zod or Yup** for strict data validation.  
+
+✅ **Implement a CI/CD Pipeline**:  
+- Automate testing & deployments using **GitHub Actions**.  
+- Ensure new commits trigger **automatic linting, testing, and build checks**.  
+
+---
+
 ## 🛠️ Troubleshooting  
 
-**2. No news is loading?**  
+**1. No news is loading?**  
 - Check if your API key is valid.
