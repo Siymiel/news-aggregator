@@ -1,4 +1,4 @@
-# 📰 News Aggregator  
+# 📰 News Aggregator Application
 
 A **React & Redux-powered** news aggregator that fetches and displays news from multiple sources. Users can filter news by **category, source, date, and author** for a customized reading experience.
 
